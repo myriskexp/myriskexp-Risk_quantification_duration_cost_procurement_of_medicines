@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantitative Risk Analysis — Procurement of Medicines | MyRiskExp</title>
+  <meta name="description" content="Monte Carlo simulation-based risk analysis of project duration and cost for government pharmaceutical procurement." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+  <style>
+:root{--navy-950:#0a0f1e;--navy-900:#0f1729;--navy-800:#162038;--slate-400:#8c99b0;--slate-300:#a8b3c7;--slate-200:#c5cddb;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;--amber-500:#f59e0b;--amber-400:#fbbf24;--coral-500:#ef6b5b;--green-500:#22c55e;--green-400:#4ade80;--red-500:#ef4444;--white:#fff;--font-display:'DM Serif Display',Georgia,serif;--font-body:'IBM Plex Sans',-apple-system,sans-serif;--font-mono:'IBM Plex Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--navy-950);color:var(--slate-200);line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.6rem;padding:.7rem 1.6rem;border-radius:8px;font-family:var(--font-body);font-size:13.5px;font-weight:600;letter-spacing:.02em;text-decoration:none;cursor:pointer;border:none;transition:all .25s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+.btn svg{width:16px;height:16px;flex-shrink:0}
+.btn-primary{background:linear-gradient(135deg,var(--teal-500),#0d9488);color:var(--white);box-shadow:0 2px 12px rgba(20,184,166,.25),inset 0 1px 0 rgba(255,255,255,.1)}
+.btn-primary:hover{background:linear-gradient(135deg,var(--teal-400),var(--teal-500));box-shadow:0 4px 20px rgba(20,184,166,.35);transform:translateY(-1px)}
+.btn-secondary{background:rgba(255,255,255,.05);color:var(--slate-200);border:1px solid rgba(255,255,255,.12)}
+.btn-secondary:hover{background:rgba(255,255,255,.1);border-color:rgba(20,184,166,.4);color:var(--teal-400);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--teal-400);padding:.5rem 0;border-radius:0}
+.btn-ghost:hover{color:var(--teal-300)}
+.btn-ghost::after{content:'';position:absolute;bottom:4px;left:0;width:0;height:1.5px;background:var(--teal-400);transition:width .3s}
+.btn-ghost:hover::after{width:100%}
+.btn-sm{padding:.5rem 1.1rem;font-size:12px}
+.btn-lg{padding:.85rem 2rem;font-size:14.5px}
+.btn-group{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:2rem}
+
+/* LANGUAGE TOGGLE */
+.lang-toggle{display:flex;align-items:center;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;border:1px solid rgba(255,255,255,.08)}
+.lang-btn{padding:.3rem .75rem;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--slate-400);background:transparent;border:none;border-radius:6px;cursor:pointer;transition:all .2s}
+.lang-btn.active{background:rgba(20,184,166,.15);color:var(--teal-400)}
+.lang-btn:hover:not(.active){color:var(--slate-200)}
+
+/* BILINGUAL SYSTEM */
+[data-lang-en]{display:inline}[data-lang-es]{display:none}
+html[lang="es"] [data-lang-en]{display:none}html[lang="es"] [data-lang-es]{display:inline}
+div[data-lang-en],p[data-lang-en],h1[data-lang-en],h2[data-lang-en],h3[data-lang-en],h4[data-lang-en],tr[data-lang-en]{display:block}
+div[data-lang-es],p[data-lang-es],h1[data-lang-es],h2[data-lang-es],h3[data-lang-es],h4[data-lang-es],tr[data-lang-es]{display:none}
+html[lang="es"] div[data-lang-en],html[lang="es"] p[data-lang-en],html[lang="es"] h1[data-lang-en],html[lang="es"] h2[data-lang-en],html[lang="es"] h3[data-lang-en],html[lang="es"] h4[data-lang-en],html[lang="es"] tr[data-lang-en]{display:none}
+html[lang="es"] div[data-lang-es],html[lang="es"] p[data-lang-es],html[lang="es"] h1[data-lang-es],html[lang="es"] h2[data-lang-es],html[lang="es"] h3[data-lang-es],html[lang="es"] h4[data-lang-es],html[lang="es"] tr[data-lang-es]{display:block}
+span[data-lang-en],a[data-lang-en]{display:inline}span[data-lang-es],a[data-lang-es]{display:none}
+html[lang="es"] span[data-lang-en],html[lang="es"] a[data-lang-en]{display:none}html[lang="es"] span[data-lang-es],html[lang="es"] a[data-lang-es]{display:inline}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,15,30,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:.75rem;text-decoration:none}
+.nav-logo img{height:36px;width:auto}
+.nav-right{display:flex;align-items:center;gap:1.5rem}
+.nav-links{display:flex;gap:1.75rem;list-style:none}
+.nav-links a{color:var(--slate-400);text-decoration:none;font-size:12.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--teal-400)}
+.nav-mobile-toggle{display:none;background:none;border:none;color:var(--slate-300);cursor:pointer;padding:.5rem}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;padding:8rem 2rem 6rem}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 80%,rgba(20,184,166,.08) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 20%,rgba(245,158,11,.06) 0%,transparent 50%),linear-gradient(180deg,var(--navy-950),var(--navy-900))}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at center,black 30%,transparent 70%)}
+.hero-content{position:relative;max-width:1200px;margin:0 auto;width:100%}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem 1rem;background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.2);border-radius:100px;font-size:12px;font-weight:600;color:var(--teal-400);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2rem;animation:fadeInUp .8s ease both}
+.hero-eyebrow::before{content:'';width:6px;height:6px;background:var(--teal-400);border-radius:50%;animation:pulse-dot 2s ease infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-family:var(--font-display);font-size:clamp(2.5rem,5vw,4.2rem);color:var(--white);line-height:1.15;margin-bottom:1.5rem;max-width:800px;animation:fadeInUp .8s ease .1s both}
+.hero h1 em{font-style:italic;color:var(--teal-400)}
+.hero-description{font-size:1.1rem;color:var(--slate-400);max-width:620px;margin-bottom:2rem;font-weight:300;animation:fadeInUp .8s ease .2s both}
+.hero-buttons{animation:fadeInUp .8s ease .3s both;margin-bottom:3rem}
+.hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;max-width:680px;background:rgba(255,255,255,.06);border-radius:12px;overflow:hidden;animation:fadeInUp .8s ease .4s both}
+.hero-stat{padding:1.5rem;background:rgba(15,23,41,.8)}
+.hero-stat-value{font-family:var(--font-mono);font-size:1.8rem;font-weight:500;color:var(--white);margin-bottom:.25rem}
+.hero-stat-value .unit{font-size:.9rem;color:var(--slate-400);font-weight:400}
+.hero-stat-label{font-size:12px;color:var(--slate-400);text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* SECTIONS */
+section{padding:6rem 2rem;position:relative}
+.section-inner{max-width:1200px;margin:0 auto}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-500);margin-bottom:.75rem}
+.section-title{font-family:var(--font-display);font-size:clamp(1.8rem,3.5vw,2.6rem);color:var(--white);line-height:1.2;margin-bottom:1.5rem}
+.section-desc{color:var(--slate-400);max-width:640px;font-weight:300;font-size:1.05rem}
+.divider{border:none;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
+
+/* SCR */
+#case-study{background:var(--navy-950)}
+.scr-container{display:grid;gap:0;margin-top:3rem}
+.scr-card{position:relative;padding:2.5rem 2.5rem 2.5rem 3.5rem;border-left:3px solid transparent;background:rgba(255,255,255,.015);transition:background .3s}
+.scr-card:hover{background:rgba(255,255,255,.03)}
+.scr-card+.scr-card{border-top:1px solid rgba(255,255,255,.04)}
+.scr-card.situation{border-left-color:var(--teal-500)}
+.scr-card.complication{border-left-color:var(--amber-500)}
+.scr-card.resolution{border-left-color:var(--green-500)}
+.scr-badge{display:inline-flex;align-items:center;gap:.4rem;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .8rem;border-radius:100px;margin-bottom:1rem}
+.scr-badge.s-badge{background:rgba(20,184,166,.12);color:var(--teal-400)}
+.scr-badge.c-badge{background:rgba(245,158,11,.12);color:var(--amber-400)}
+.scr-badge.r-badge{background:rgba(34,197,94,.12);color:var(--green-400)}
+.scr-card h3{font-family:var(--font-display);font-size:1.35rem;color:var(--white);margin-bottom:.75rem;line-height:1.3}
+.scr-card p{color:var(--slate-300);font-size:.95rem;line-height:1.75;max-width:780px}
+.scr-card p+p{margin-top:.75rem}
+.scr-highlight{font-family:var(--font-mono);font-size:.85rem;color:var(--teal-400);background:rgba(20,184,166,.08);padding:.15rem .5rem;border-radius:4px}
+.scr-kpi-row{display:flex;gap:2rem;margin-top:1.25rem;flex-wrap:wrap}
+.scr-kpi{display:flex;align-items:baseline;gap:.5rem}
+.scr-kpi-val{font-family:var(--font-mono);font-size:1.4rem;font-weight:600;color:var(--white)}
+.scr-kpi-label{font-size:12px;color:var(--slate-400)}
+
+/* METHOD */
+#methodology{background:var(--navy-900)}
+.method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:3rem}
+.method-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .3s,transform .3s}
+.method-card:hover{border-color:rgba(20,184,166,.3);transform:translateY(-2px)}
+.method-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:1.25rem;background:rgba(20,184,166,.1);color:var(--teal-400)}
+.method-card h3{font-size:1rem;font-weight:600;color:var(--white);margin-bottom:.75rem}
+.method-card p{font-size:.9rem;color:var(--slate-400);line-height:1.6}
+
+/* PHASES */
+#phases{background:var(--navy-950)}
+.phases-flow{display:flex;align-items:center;gap:0;margin-top:3rem;overflow-x:auto;padding-bottom:1rem}
+.phase-node{flex-shrink:0;text-align:center}
+.phase-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.1rem;font-weight:600;color:var(--white);margin:0 auto .75rem;transition:transform .3s}
+.phase-node:hover .phase-circle{transform:scale(1.1)}
+.phase-circle.high{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 4px 20px rgba(239,68,68,.3)}
+.phase-circle.medium{background:linear-gradient(135deg,var(--amber-500),#d97706);box-shadow:0 4px 20px rgba(245,158,11,.3)}
+.phase-circle.low{background:linear-gradient(135deg,var(--teal-500),#0d9488);box-shadow:0 4px 20px rgba(20,184,166,.3)}
+.phase-name{font-size:12px;font-weight:600;color:var(--slate-200);max-width:110px;margin:0 auto;line-height:1.4}
+.phase-days{font-family:var(--font-mono);font-size:11px;color:var(--slate-400);margin-top:.25rem}
+.phase-arrow{flex-shrink:0;width:48px;height:2px;background:rgba(255,255,255,.15);position:relative;margin:0 .5rem;margin-bottom:2.5rem}
+.phase-arrow::after{content:'';position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left:6px solid rgba(255,255,255,.15)}
+
+/* SCENARIOS */
+.scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3rem}
+.scenario-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
+.scenario-header{padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between}
+.scenario-tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.25rem .75rem;border-radius:100px}
+.scenario-tag.s1{background:rgba(20,184,166,.15);color:var(--teal-400)}
+.scenario-tag.s2{background:rgba(245,158,11,.15);color:var(--amber-400)}
+.scenario-header h3{font-family:var(--font-display);font-size:1.25rem;color:var(--white)}
+.scenario-body{padding:2rem}
+.scenario-path{font-family:var(--font-mono);font-size:13px;color:var(--slate-400);margin-bottom:1.5rem;padding:.5rem .75rem;background:rgba(255,255,255,.03);border-radius:6px;display:inline-block}
+.scenario-sub{font-size:13px;font-weight:600;margin-bottom:1rem;margin-top:1.5rem}
+.metric-row{display:flex;justify-content:space-between;align-items:baseline;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.metric-row:last-child{border-bottom:none}
+.metric-label{font-size:13px;color:var(--slate-400)}
+.metric-value{font-family:var(--font-mono);font-size:14px;color:var(--white);font-weight:500}
+.metric-value.highlight-amber{color:var(--amber-400)}
+.metric-value.highlight-red{color:var(--coral-500)}
+.metric-value.highlight-green{color:var(--green-400)}
+
+/* CHARTS */
+.chart-section{background:var(--navy-900)}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3rem}
+.chart-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1.75rem}
+.chart-card.full-width{grid-column:1/-1}
+.chart-card h4{font-size:.95rem;font-weight:600;color:var(--white);margin-bottom:.25rem}
+.chart-card .chart-subtitle{font-size:12px;color:var(--slate-400);margin-bottom:1.25rem}
+.chart-wrapper{position:relative;height:300px}
+.chart-wrapper.tall{height:380px}
+.quadrant-legend{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem}
+.quadrant-item{display:flex;align-items:center;gap:.4rem;font-size:12px;color:var(--slate-400)}
+.quadrant-dot{width:10px;height:10px;border-radius:50%}
+
+/* RISK TABLE */
+#risk-matrix{background:var(--navy-950)}
+.risk-table-wrap{margin-top:3rem;overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,.06)}
+.risk-table{width:100%;border-collapse:collapse;font-size:13px}
+.risk-table thead{background:rgba(255,255,255,.04)}
+.risk-table th{padding:1rem 1.25rem;text-align:left;font-weight:600;color:var(--slate-300);font-size:11px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid rgba(255,255,255,.08)}
+.risk-table td{padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--slate-300);vertical-align:top}
+.risk-table tr:last-child td{border-bottom:none}
+.risk-table tr:hover td{background:rgba(255,255,255,.02)}
+.risk-badge{font-size:11px;font-weight:600;padding:.2rem .6rem;border-radius:100px;display:inline-block}
+.risk-badge.high{background:rgba(239,68,68,.15);color:#f87171}
+.risk-badge.medium{background:rgba(245,158,11,.15);color:#fbbf24}
+.risk-badge.low{background:rgba(20,184,166,.15);color:#5eead4}
+.corr-bar{display:inline-block;height:6px;background:var(--teal-500);border-radius:3px;vertical-align:middle;margin-right:.5rem}
+
+/* CONCLUSIONS */
+#conclusions{background:var(--navy-900)}
+.conclusion-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem;margin-top:3rem}
+.conclusion-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;position:relative;overflow:hidden}
+.conclusion-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.conclusion-card.teal::before{background:var(--teal-500)}
+.conclusion-card.amber::before{background:var(--amber-500)}
+.conclusion-card.coral::before{background:var(--coral-500)}
+.conclusion-card h4{font-size:1rem;font-weight:600;color:var(--white);margin-bottom:.75rem}
+.conclusion-card p{font-size:.9rem;color:var(--slate-400);line-height:1.65}
+
+/* CODE */
+#source-code{background:var(--navy-950)}
+.code-preview{margin-top:3rem;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);border-radius:12px;overflow:hidden}
+.code-header{display:flex;align-items:center;gap:.5rem;padding:.75rem 1.25rem;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06)}
+.code-dot{width:10px;height:10px;border-radius:50%}
+.code-dot.red{background:#ff5f56}.code-dot.yellow{background:#ffbd2e}.code-dot.green{background:#27c93f}
+.code-filename{font-family:var(--font-mono);font-size:12px;color:var(--slate-400);margin-left:.5rem}
+.code-body{padding:1.5rem;font-family:var(--font-mono);font-size:12.5px;line-height:1.7;color:var(--slate-300);overflow-x:auto;max-height:400px;overflow-y:auto}
+.code-body .kw{color:#c792ea}.code-body .fn{color:#82aaff}.code-body .str{color:#c3e88d}.code-body .cm{color:#546e7a}.code-body .num{color:#f78c6c}.code-body .op{color:#89ddff}
+
+/* FOOTER */
+footer{border-top:1px solid rgba(255,255,255,.06);background:var(--navy-950)}
+.footer-inner{max-width:1200px;margin:0 auto;padding:2.5rem 2rem}
+.footer-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.footer-logo img{height:28px;opacity:.6}
+.footer-social{display:flex;gap:1rem}
+.footer-social a{color:var(--slate-400);transition:color .2s}
+.footer-social a:hover{color:var(--teal-400)}
+.footer-text{font-size:12px;color:var(--slate-400);line-height:1.8}
+.footer-text a{color:var(--slate-300);text-decoration:underline;text-underline-offset:2px}
+.footer-text a:hover{color:var(--teal-400)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .nav-mobile-toggle{display:block}
+  .nav-links.open{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--navy-900);padding:1.5rem 2rem;gap:1rem;border-bottom:1px solid rgba(255,255,255,.06)}
+  .scenario-grid,.chart-grid{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .phases-flow{flex-wrap:wrap;justify-content:center;gap:.5rem}
+  .phase-arrow{width:24px}
+  .footer-top{flex-direction:column;gap:1rem}
+  .scr-card{padding:2rem 1.5rem 2rem 2rem}
+}
+
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav><div class="nav-inner">
+  <a href="#" class="nav-logo">
+    <img src="Logo/myriskexp-logo.png" alt="MyRiskExp" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+    <span style="display:none;font-family:var(--font-display);color:var(--white);font-size:1.1rem;">MyRiskExp</span>
+  </a>
+  <div class="nav-right">
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#case-study"><span data-lang-en>Case</span><span data-lang-es>Caso</span></a></li>
+      <li><a href="#methodology"><span data-lang-en>Method</span><span data-lang-es>Método</span></a></li>
+      <li><a href="#results"><span data-lang-en>Results</span><span data-lang-es>Resultados</span></a></li>
+      <li><a href="#charts"><span data-lang-en>Analysis</span><span data-lang-es>Análisis</span></a></li>
+      <li><a href="#risk-matrix"><span data-lang-en>Risk</span><span data-lang-es>Riesgo</span></a></li>
+      <li><a href="#conclusions"><span data-lang-en>Conclusions</span><span data-lang-es>Conclusiones</span></a></li>
+      <li><a href="#source-code"><span data-lang-en>Code</span><span data-lang-es>Código</span></a></li>
+    </ul>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="btnES" onclick="setLang('es')">ES</button>
+    </div>
+    <button class="nav-mobile-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</div></nav>
+
+<!-- HERO -->
+<section class="hero"><div class="hero-bg"></div><div class="hero-grid"></div>
+<div class="hero-content">
+  <div class="hero-eyebrow"><span data-lang-en>Quantitative Risk Analysis</span><span data-lang-es>Análisis Cuantitativo de Riesgos</span></div>
+  <h1 data-lang-en>Duration &amp; Cost Simulation for <em>Pharmaceutical Procurement</em></h1>
+  <h1 data-lang-es>Simulación de Duración y Costo para <em>Adquisición de Medicamentos</em></h1>
+  <p class="hero-description" data-lang-en>Monte Carlo simulation assessing schedule and budget risk across two critical path scenarios for a government medication acquisition project — 6,000 iterations via PERT-based modeling.</p>
+  <p class="hero-description" data-lang-es>Simulación Monte Carlo evaluando el riesgo de cronograma y presupuesto en dos escenarios de ruta crítica para un proyecto gubernamental de adquisición de medicamentos — 6,000 iteraciones con modelado PERT.</p>
+  <div class="hero-buttons btn-group">
+    <a href="#case-study" class="btn btn-primary btn-lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg><span data-lang-en>Explore the Analysis</span><span data-lang-es>Explorar el Análisis</span></a>
+    <a href="https://github.com/myriskexp/Risk_quantification_duartion_cost_procurement_of_medicines" target="_blank" rel="noreferrer" class="btn btn-secondary btn-lg"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg><span data-lang-en>View on GitHub</span><span data-lang-es>Ver en GitHub</span></a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-value">6,000</div><div class="hero-stat-label"><span data-lang-en>Simulations</span><span data-lang-es>Simulaciones</span></div></div>
+    <div class="hero-stat"><div class="hero-stat-value">6 <span class="unit"><span data-lang-en>phases</span><span data-lang-es>fases</span></span></div><div class="hero-stat-label"><span data-lang-en>Critical Path</span><span data-lang-es>Ruta Crítica</span></div></div>
+    <div class="hero-stat"><div class="hero-stat-value">2 <span class="unit"><span data-lang-en>scenarios</span><span data-lang-es>escenarios</span></span></div><div class="hero-stat-label"><span data-lang-en>Compared</span><span data-lang-es>Comparados</span></div></div>
+    <div class="hero-stat"><div class="hero-stat-value">4.9<span class="unit">%</span></div><div class="hero-stat-label"><span data-lang-en>Optimal Zone</span><span data-lang-es>Zona Óptima</span></div></div>
+  </div>
+</div></section>
+
+<hr class="divider"/>
+
+<!-- SCR CASE STUDY -->
+<section id="case-study"><div class="section-inner reveal">
+  <div class="section-label"><span data-lang-en>Case Study</span><span data-lang-es>Caso de Estudio</span></div>
+  <h2 class="section-title" data-lang-en>The Decision at Stake</h2>
+  <h2 class="section-title" data-lang-es>La Decisión en Juego</h2>
+  <p class="section-desc" data-lang-en>Framed using the McKinsey SCR storytelling structure to articulate the strategic challenge, the risk factors, and the analytical path forward.</p>
+  <p class="section-desc" data-lang-es>Enmarcado con la estructura narrativa SCR de McKinsey para articular el desafío estratégico, los factores de riesgo y el camino analítico a seguir.</p>
+
+  <div class="scr-container">
+    <div class="scr-card situation">
+      <div class="scr-badge s-badge"><strong>S</strong>&nbsp; <span data-lang-en>Situation</span><span data-lang-es>Situación</span></div>
+      <h3 data-lang-en>A government entity needs to procure essential medications for its population</h3>
+      <h3 data-lang-es>Una entidad gubernamental necesita adquirir medicamentos esenciales para su población</h3>
+      <p data-lang-en>The government of country XYZ has initiated a pharmaceutical procurement project consisting of six sequential phases: planning and demand analysis, competitive bidding, budget approval, contracting, production and distribution, and final delivery. The project starts on <span class="scr-highlight">July 1, 2025</span>, with dual targets that must be met simultaneously.</p>
+      <p data-lang-es>El gobierno del país XYZ ha iniciado un proyecto de adquisición de medicamentos compuesto por seis fases secuenciales: planeación y análisis de demanda, licitación, aprobación presupuestaria, contratación, producción y distribución, y entrega final. El proyecto inicia el <span class="scr-highlight">1 de julio de 2025</span>, con metas duales que deben cumplirse simultáneamente.</p>
+      <div class="scr-kpi-row">
+        <div class="scr-kpi"><span class="scr-kpi-val">100</span><span class="scr-kpi-label"><span data-lang-en>day target</span><span data-lang-es>días objetivo</span></span></div>
+        <div class="scr-kpi"><span class="scr-kpi-val">$20,000</span><span class="scr-kpi-label"><span data-lang-en>budget cap</span><span data-lang-es>tope presupuestal</span></span></div>
+        <div class="scr-kpi"><span class="scr-kpi-val">6</span><span class="scr-kpi-label"><span data-lang-en>project phases</span><span data-lang-es>fases del proyecto</span></span></div>
+      </div>
+    </div>
+
+    <div class="scr-card complication">
+      <div class="scr-badge c-badge"><strong>C</strong>&nbsp; <span data-lang-en>Complication</span><span data-lang-es>Complicación</span></div>
+      <h3 data-lang-en>Sequential execution is unlikely to meet the deadline — but parallel execution introduces cost risk</h3>
+      <h3 data-lang-es>La ejecución secuencial probablemente no cumplirá el plazo — pero la ejecución paralela introduce riesgo de sobrecosto</h3>
+      <p data-lang-en>Under sequential execution (Scenario 1), the probability of completing within 100 days is just <span class="scr-highlight">26%</span>. The median duration is 105.9 days — exceeding the target before any contingency. Running Bidding (B) and Budget Approval (C) in parallel (Scenario 2) could save ~10 days, but introduces overhead costs from duplicate staffing, concurrent IT systems, and potential rework — estimated at <span class="scr-highlight">$2,249</span> in additional expenses.</p>
+      <p data-lang-es>Bajo ejecución secuencial (Escenario 1), la probabilidad de completar en 100 días es solo <span class="scr-highlight">26%</span>. La duración mediana es 105.9 días — excediendo el objetivo. Ejecutar Licitación (B) y Aprobación Presupuestaria (C) en paralelo (Escenario 2) podría ahorrar ~10 días, pero introduce sobrecostos por personal duplicado, sistemas IT concurrentes y reprocesos — estimados en <span class="scr-highlight">$2,249</span> adicionales.</p>
+      <p data-lang-en>Furthermore, the Bidding phase (B) exhibits the highest variability with a correlation of 0.76 to total duration and a range spanning 37.7 days — making it the single largest source of schedule uncertainty regardless of scenario.</p>
+      <p data-lang-es>Además, la fase de Licitación (B) exhibe la mayor variabilidad con correlación de 0.76 a la duración total y un rango de 37.7 días — convirtiéndola en la mayor fuente de incertidumbre del cronograma.</p>
+    </div>
+
+    <div class="scr-card resolution">
+      <div class="scr-badge r-badge"><strong>R</strong>&nbsp; <span data-lang-en>Resolution</span><span data-lang-es>Resolución</span></div>
+      <h3 data-lang-en>A Monte Carlo simulation quantifies the exact trade-off to enable an informed decision</h3>
+      <h3 data-lang-es>Una simulación Monte Carlo cuantifica el trade-off exacto para habilitar una decisión informada</h3>
+      <p data-lang-en>By running 6,000 Monte Carlo iterations across both scenarios, we produce probability distributions for duration, dates, and total cost — enabling decision-makers to see the full risk landscape. The analysis reveals that while Scenario 2 raises the 100-day probability from 26% to <span class="scr-highlight">69%</span>, the probability of staying within both time and budget targets simultaneously is only <span class="scr-highlight">4.9%</span>. This provides a clear, data-driven basis for budget allocation, contingency planning, and executive trade-off decisions.</p>
+      <p data-lang-es>Al ejecutar 6,000 iteraciones Monte Carlo en ambos escenarios, producimos distribuciones de probabilidad para duración, fechas y costo total — permitiendo ver el panorama completo de riesgo. El análisis revela que mientras el Escenario 2 eleva la probabilidad de 100 días del 26% al <span class="scr-highlight">69%</span>, la probabilidad de mantenerse en ambas metas simultáneamente es solo del <span class="scr-highlight">4.9%</span>. Esto proporciona una base clara para la asignación presupuestal, planificación de contingencias y decisiones ejecutivas.</p>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <a href="#results" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg><span data-lang-en>View Full Results</span><span data-lang-es>Ver Resultados Completos</span></a>
+    <a href="#methodology" class="btn btn-secondary"><span data-lang-en>Understand the Methodology</span><span data-lang-es>Entender la Metodología</span></a>
+  </div>
+</div></section>
+
+<hr class="divider"/>
+
+<!-- METHODOLOGY -->
+<section id="methodology"><div class="section-inner reveal">
+  <div class="section-label"><span data-lang-en>Approach</span><span data-lang-es>Enfoque</span></div>
+  <h2 class="section-title" data-lang-en>Methodology</h2><h2 class="section-title" data-lang-es>Metodología</h2>
+  <p class="section-desc" data-lang-en>A structured Monte Carlo simulation framework using PERT distributions to model uncertainty in both project duration and cost, analyzed across two scheduling strategies.</p>
+  <p class="section-desc" data-lang-es>Un marco estructurado de simulación Monte Carlo usando distribuciones PERT para modelar la incertidumbre en duración y costo, analizado en dos estrategias de programación.</p>
+  <div class="method-grid">
+    <div class="method-card"><div class="method-card-icon">⊞</div><h3 data-lang-en>PERT Distributions</h3><h3 data-lang-es>Distribuciones PERT</h3><p data-lang-en>Each of the 6 phases modeled with optimistic, most likely, and pessimistic estimates for both duration and cost.</p><p data-lang-es>Cada una de las 6 fases modelada con estimaciones optimista, más probable y pesimista para duración y costo.</p></div>
+    <div class="method-card"><div class="method-card-icon">⟳</div><h3 data-lang-en>Monte Carlo Simulation</h3><h3 data-lang-es>Simulación Monte Carlo</h3><p data-lang-en>6,000 iterations per scenario using IziRisk® in Excel. Random sampling produces a probability landscape of outcomes.</p><p data-lang-es>6,000 iteraciones por escenario usando IziRisk® en Excel. El muestreo aleatorio produce un panorama probabilístico.</p></div>
+    <div class="method-card"><div class="method-card-icon">⊿</div><h3 data-lang-en>Scenario Comparison</h3><h3 data-lang-es>Comparación de Escenarios</h3><p data-lang-en>Two critical paths: sequential (E1) vs. parallel Bidding &amp; Budget Approval (E2), with overhead cost adjustments.</p><p data-lang-es>Dos rutas críticas: secuencial (E1) vs. Licitación y Aprobación en paralelo (E2), con ajustes de sobrecostos.</p></div>
+    <div class="method-card"><div class="method-card-icon">◉</div><h3 data-lang-en>Percentile Analysis</h3><h3 data-lang-es>Análisis de Percentiles</h3><p data-lang-en>Key percentiles (P10, P50, P90) extracted for duration, dates, and costs. Correlation analysis identifies highest-risk activities.</p><p data-lang-es>Percentiles clave (P10, P50, P90) para duración, fechas y costos. Análisis de correlación identifica actividades de mayor riesgo.</p></div>
+  </div>
+  <div class="btn-group"><a href="#phases" class="btn btn-ghost"><span data-lang-en>See Project Phases →</span><span data-lang-es>Ver Fases del Proyecto →</span></a></div>
+</div></section>
+
+<hr class="divider"/>
+
+<!-- PHASES -->
+<section id="phases"><div class="section-inner reveal">
+  <div class="section-label"><span data-lang-en>Project Structure</span><span data-lang-es>Estructura del Proyecto</span></div>
+  <h2 class="section-title" data-lang-en>Six Critical Phases</h2><h2 class="section-title" data-lang-es>Seis Fases Críticas</h2>
+  <p class="section-desc" data-lang-en>Activity B (Bidding) dominates the critical path with 0.76 correlation to total duration.</p>
+  <p class="section-desc" data-lang-es>La actividad B (Licitación) domina la ruta crítica con correlación de 0.76 a la duración total.</p>
+  <div class="phases-flow">
+    <div class="phase-node"><div class="phase-circle medium">A</div><div class="phase-name"><span data-lang-en>Planning</span><span data-lang-es>Planeación</span></div><div class="phase-days">~15.9d</div></div><div class="phase-arrow"></div>
+    <div class="phase-node"><div class="phase-circle high">B</div><div class="phase-name"><span data-lang-en>Bidding</span><span data-lang-es>Licitación</span></div><div class="phase-days">~33.2d</div></div><div class="phase-arrow"></div>
+    <div class="phase-node"><div class="phase-circle low">C</div><div class="phase-name"><span data-lang-en>Budget Approval</span><span data-lang-es>Aprobación Presupuestaria</span></div><div class="phase-days">~10.8d</div></div><div class="phase-arrow"></div>
+    <div class="phase-node"><div class="phase-circle medium">D</div><div class="phase-name"><span data-lang-en>Contracting</span><span data-lang-es>Contratación</span></div><div class="phase-days">~12.4d</div></div><div class="phase-arrow"></div>
+    <div class="phase-node"><div class="phase-circle high">E</div><div class="phase-name"><span data-lang-en>Production</span><span data-lang-es>Producción</span></div><div class="phase-days">~25.9d</div></div><div class="phase-arrow"></div>
+    <div class="phase-node"><div class="phase-circle low">F</div><div class="phase-name"><span data-lang-en>Delivery</span><span data-lang-es>Entrega</span></div><div class="phase-days">~8.2d</div></div>
+  </div>
+  <div class="btn-group">
+    <a href="#risk-matrix" class="btn btn-secondary btn-sm"><span data-lang-en>View Risk Matrix</span><span data-lang-es>Ver Matriz de Riesgos</span></a>
+    <a href="#results" class="btn btn-ghost btn-sm"><span data-lang-en>Jump to Results →</span><span data-lang-es>Ir a Resultados →</span></a>
+  </div>
+</div></section>
+
+<hr class="divider"/>
+
+<!-- RESULTS -->
+<section id="results"><div class="section-inner reveal">
+  <div class="section-label"><span data-lang-en>Simulation Outcomes</span><span data-lang-es>Resultados de la Simulación</span></div>
+  <h2 class="section-title" data-lang-en>Scenario Comparison</h2><h2 class="section-title" data-lang-es>Comparación de Escenarios</h2>
+  <p class="section-desc" data-lang-en>Head-to-head comparison — the classic trade-off between time savings and cost overruns.</p>
+  <p class="section-desc" data-lang-es>Comparación directa — el clásico trade-off entre ahorro de tiempo y sobrecostos.</p>
+  <div class="scenario-grid">
+    <div class="scenario-card">
+      <div class="scenario-header"><h3><span data-lang-en>Scenario 1</span><span data-lang-es>Escenario 1</span></h3><span class="scenario-tag s1"><span data-lang-en>Sequential</span><span data-lang-es>Secuencial</span></span></div>
+      <div class="scenario-body">
+        <div class="scenario-path">A → B → C → D → E → F</div>
+        <div class="scenario-sub" style="color:var(--teal-400)"><span data-lang-en>DURATION</span><span data-lang-es>DURACIÓN</span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>Mean</span><span data-lang-es>Media</span></span><span class="metric-value">106.4 <span data-lang-en>days</span><span data-lang-es>días</span></span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>Median</span><span data-lang-es>Mediana</span> (P50)</span><span class="metric-value">105.9 <span data-lang-en>days</span><span data-lang-es>días</span></span></div>
+        <div class="metric-row"><span class="metric-label">P90</span><span class="metric-value highlight-amber">119.0 <span data-lang-en>days</span><span data-lang-es>días</span></span></div>
+        <div class="metric-row"><span class="metric-label">P(≤ 100d)</span><span class="metric-value highlight-red">26%</span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>P50 Date</span><span data-lang-es>Fecha P50</span></span><span class="metric-value">Oct 02, 2025</span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>P90 Date</span><span data-lang-es>Fecha P90</span></span><span class="metric-value highlight-amber">Oct 15, 2025</span></div>
+        <div class="scenario-sub" style="color:var(--teal-400)"><span data-lang-en>COST</span><span data-lang-es>COSTO</span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>Median</span><span data-lang-es>Mediana</span> (P50)</span><span class="metric-value">$20,574</span></div>
+        <div class="metric-row"><span class="metric-label">P90</span><span class="metric-value highlight-amber">$23,303</span></div>
+        <div class="metric-row"><span class="metric-label">P(≤ $20K)</span><span class="metric-value highlight-amber">37.8%</span></div>
+      </div>
+    </div>
+    <div class="scenario-card">
+      <div class="scenario-header"><h3><span data-lang-en>Scenario 2</span><span data-lang-es>Escenario 2</span></h3><span class="scenario-tag s2"><span data-lang-en>Parallel</span><span data-lang-es>Paralelo</span> B||C</span></div>
+      <div class="scenario-body">
+        <div class="scenario-path">A → max(B,C) → D → E → F</div>
+        <div class="scenario-sub" style="color:var(--amber-400)"><span data-lang-en>DURATION</span><span data-lang-es>DURACIÓN</span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>Mean</span><span data-lang-es>Media</span></span><span class="metric-value">95.5 <span data-lang-en>days</span><span data-lang-es>días</span></span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>Median</span><span data-lang-es>Mediana</span> (P50)</span><span class="metric-value">95.2 <span data-lang-en>days</span><span data-lang-es>días</span></span></div>
+        <div class="metric-row"><span class="metric-label">P90</span><span class="metric-value highlight-amber">107.9 <span data-lang-en>days</span><span data-lang-es>días</span></span></div>
+        <div class="metric-row"><span class="metric-label">P(≤ 100d)</span><span class="metric-value highlight-green">69%</span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>P50 Date</span><span data-lang-es>Fecha P50</span></span><span class="metric-value">Sep 21, 2025</span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>P90 Date</span><span data-lang-es>Fecha P90</span></span><span class="metric-value highlight-amber">Oct 04, 2025</span></div>
+        <div class="scenario-sub" style="color:var(--amber-400)"><span data-lang-en>COST</span><span data-lang-es>COSTO</span></div>
+        <div class="metric-row"><span class="metric-label"><span data-lang-en>Median</span><span data-lang-es>Mediana</span> (P50)</span><span class="metric-value">$23,497</span></div>
+        <div class="metric-row"><span class="metric-label">P90</span><span class="metric-value highlight-red">$27,036</span></div>
+        <div class="metric-row"><span class="metric-label">P(≤ $20K)</span><span class="metric-value highlight-red">5%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-group">
+    <a href="#charts" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span data-lang-en>See Visual Analysis</span><span data-lang-es>Ver Análisis Visual</span></a>
+    <a href="#conclusions" class="btn btn-ghost"><span data-lang-en>Skip to Conclusions →</span><span data-lang-es>Ir a Conclusiones →</span></a>
+  </div>
+</div></section>
+
+<hr class="divider"/>
+
+<!-- CHARTS -->
+<section id="charts" class="chart-section"><div class="section-inner reveal">
+  <div class="section-label"><span data-lang-en>Visual Analysis</span><span data-lang-es>Análisis Visual</span></div>
+  <h2 class="section-title" data-lang-en>Simulation Distributions</h2><h2 class="section-title" data-lang-es>Distribuciones de la Simulación</h2>
+  <p class="section-desc" data-lang-en>Probability distributions from Monte Carlo simulation with cumulative curves and percentile markers.</p>
+  <p class="section-desc" data-lang-es>Distribuciones de probabilidad de la simulación Monte Carlo con curvas acumuladas y marcadores de percentiles.</p>
+  <div class="chart-grid">
+    <div class="chart-card"><h4 data-lang-en>Duration — Scenario 1</h4><h4 data-lang-es>Duración — Escenario 1</h4><div class="chart-subtitle" data-lang-en>Sequential: total project duration (days)</div><div class="chart-subtitle" data-lang-es>Secuencial: duración total del proyecto (días)</div><div class="chart-wrapper"><canvas id="chartDurE1"></canvas></div></div>
+    <div class="chart-card"><h4 data-lang-en>Duration — Scenario 2</h4><h4 data-lang-es>Duración — Escenario 2</h4><div class="chart-subtitle" data-lang-en>Parallel B||C: total project duration (days)</div><div class="chart-subtitle" data-lang-es>Paralelo B||C: duración total del proyecto (días)</div><div class="chart-wrapper"><canvas id="chartDurE2"></canvas></div></div>
+    <div class="chart-card"><h4 data-lang-en>Cost — Scenario 1</h4><h4 data-lang-es>Costo — Escenario 1</h4><div class="chart-subtitle" data-lang-en>Sequential: total project cost ($)</div><div class="chart-subtitle" data-lang-es>Secuencial: costo total del proyecto ($)</div><div class="chart-wrapper"><canvas id="chartCostE1"></canvas></div></div>
+    <div class="chart-card"><h4 data-lang-en>Cost — Scenario 2</h4><h4 data-lang-es>Costo — Escenario 2</h4><div class="chart-subtitle" data-lang-en>Parallel B||C: total project cost ($)</div><div class="chart-subtitle" data-lang-es>Paralelo B||C: costo total del proyecto ($)</div><div class="chart-wrapper"><canvas id="chartCostE2"></canvas></div></div>
+    <div class="chart-card full-width">
+      <h4 data-lang-en>Scenario 2 — Duration vs. Cost Scatter Plot</h4><h4 data-lang-es>Escenario 2 — Dispersión Duración vs. Costo</h4>
+      <div class="chart-subtitle" data-lang-en>Quadrant analysis: 100-day and $20,000 thresholds. Only 4.9% in optimal zone.</div>
+      <div class="chart-subtitle" data-lang-es>Análisis de cuadrantes: umbrales de 100 días y $20,000. Solo 4.9% en zona óptima.</div>
+      <div class="chart-wrapper tall"><canvas id="chartScatter"></canvas></div>
+      <div class="quadrant-legend">
+        <div class="quadrant-item"><div class="quadrant-dot" style="background:#22c55e"></div><span data-lang-en>Low Cost, Low Duration (4.9%)</span><span data-lang-es>Bajo Costo, Baja Duración (4.9%)</span></div>
+        <div class="quadrant-item"><div class="quadrant-dot" style="background:#94a3b8"></div><span data-lang-en>High Cost, Low Duration (64%)</span><span data-lang-es>Alto Costo, Baja Duración (64%)</span></div>
+        <div class="quadrant-item"><div class="quadrant-dot" style="background:#ef4444"></div><span data-lang-en>High Cost, High Duration (31%)</span><span data-lang-es>Alto Costo, Alta Duración (31%)</span></div>
+        <div class="quadrant-item"><div class="quadrant-dot" style="background:#f59e0b"></div><span data-lang-en>Low Cost, High Duration (0%)</span><span data-lang-es>Bajo Costo, Alta Duración (0%)</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-group"><a href="#risk-matrix" class="btn btn-secondary"><span data-lang-en>Explore Risk Matrix</span><span data-lang-es>Explorar Matriz de Riesgos</span></a></div>
+</div></section>
+
+<hr class="divider"/>
+
+<!-- RISK MATRIX -->
+<section id="risk-matrix"><div class="section-inner reveal">
+  <div class="section-label"><span data-lang-en>Sensitivity Analysis</span><span data-lang-es>Análisis de Sensibilidad</span></div>
+  <h2 class="section-title" data-lang-en>Activity Risk Profile</h2><h2 class="section-title" data-lang-es>Perfil de Riesgo por Actividad</h2>
+  <div class="risk-table-wrap"><table class="risk-table">
+    <thead>
+      <tr data-lang-en><th>Activity</th><th>Mean (days)</th><th>Std Dev</th><th>Range</th><th>Correlation</th><th>Risk</th><th>Observation</th></tr>
+      <tr data-lang-es><th>Actividad</th><th>Media (días)</th><th>Desv Est</th><th>Rango</th><th>Correlación</th><th>Riesgo</th><th>Observación</th></tr>
+    </thead>
+    <tbody>
+      <tr><td style="color:var(--white);font-weight:500"><span data-lang-en>B. Bidding</span><span data-lang-es>B. Licitación</span></td><td style="font-family:var(--font-mono)">33.19</td><td style="font-family:var(--font-mono)">7.0</td><td style="font-family:var(--font-mono)">37.7</td><td><span class="corr-bar" style="width:76px"></span><span style="font-family:var(--font-mono)">0.76</span></td><td><span class="risk-badge high">High</span></td><td><span data-lang-en>Dominant critical path. Highest variability.</span><span data-lang-es>Actividad dominante. Mayor variabilidad.</span></td></tr>
+      <tr><td style="color:var(--white);font-weight:500"><span data-lang-en>E. Production</span><span data-lang-es>E. Producción</span></td><td style="font-family:var(--font-mono)">25.87</td><td style="font-family:var(--font-mono)">4.6</td><td style="font-family:var(--font-mono)">23.5</td><td><span class="corr-bar" style="width:50px"></span><span style="font-family:var(--font-mono)">0.50</span></td><td><span class="risk-badge high">High</span></td><td><span data-lang-en>Logistics risk. Supplier delays.</span><span data-lang-es>Riesgo logístico. Demoras de proveedores.</span></td></tr>
+      <tr><td style="color:var(--white);font-weight:500"><span data-lang-en>A. Planning</span><span data-lang-es>A. Planeación</span></td><td style="font-family:var(--font-mono)">15.91</td><td style="font-family:var(--font-mono)">2.8</td><td style="font-family:var(--font-mono)">14.0</td><td><span class="corr-bar" style="width:31px"></span><span style="font-family:var(--font-mono)">0.31</span></td><td><span class="risk-badge medium">Med</span></td><td><span data-lang-en>Cascades downstream.</span><span data-lang-es>Impacta aguas abajo.</span></td></tr>
+      <tr><td style="color:var(--white);font-weight:500"><span data-lang-en>D. Contracting</span><span data-lang-es>D. Contratación</span></td><td style="font-family:var(--font-mono)">12.39</td><td style="font-family:var(--font-mono)">1.9</td><td style="font-family:var(--font-mono)">9.3</td><td><span class="corr-bar" style="width:21px"></span><span style="font-family:var(--font-mono)">0.21</span></td><td><span class="risk-badge low">Low</span></td><td><span data-lang-en>Legal review delays.</span><span data-lang-es>Demoras en revisión legal.</span></td></tr>
+      <tr><td style="color:var(--white);font-weight:500"><span data-lang-en>F. Delivery</span><span data-lang-es>F. Entrega</span></td><td style="font-family:var(--font-mono)">8.17</td><td style="font-family:var(--font-mono)">1.3</td><td style="font-family:var(--font-mono)">6.6</td><td><span class="corr-bar" style="width:15px"></span><span style="font-family:var(--font-mono)">0.15</span></td><td><span class="risk-badge low">Low</span></td><td><span data-lang-en>Last-mile risk.</span><span data-lang-es>Riesgo de última milla.</span></td></tr>
+      <tr><td style="color:var(--white);font-weight:500"><span data-lang-en>C. Budget Approval</span><span data-lang-es>C. Aprobación</span></td><td style="font-family:var(--font-mono)">10.82</td><td style="font-family:var(--font-mono)">2.8</td><td style="font-family:var(--font-mono)">14.3</td><td><span class="corr-bar" style="width:4px"></span><span style="font-family:var(--font-mono)">0.04</span></td><td><span class="risk-badge low">Low</span></td><td><span data-lang-en>Governance critical.</span><span data-lang-es>Crítica para gobernanza.</span></td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<hr class="divider"/>
+
+<!-- CONCLUSIONS -->
+<section id="conclusions"><div class="section-inner reveal">
+  <div class="section-label"><span data-lang-en>Key Findings</span><span data-lang-es>Hallazgos Clave</span></div>
+  <h2 class="section-title" data-lang-en>Conclusions &amp; Recommendations</h2><h2 class="section-title" data-lang-es>Conclusiones y Recomendaciones</h2>
+  <div class="conclusion-cards">
+    <div class="conclusion-card teal"><h4 data-lang-en>Time–Cost Trade-off</h4><h4 data-lang-es>Trade-off Tiempo–Costo</h4><p data-lang-en>Parallel execution reduces duration by ~10 days but increases median cost by ~$3,000. The decision hinges on deadline vs. budget priority.</p><p data-lang-es>La ejecución paralela reduce la duración en ~10 días pero incrementa el costo mediano en ~$3,000. La decisión depende de prioridad: plazo vs. presupuesto.</p></div>
+    <div class="conclusion-card amber"><h4 data-lang-en>Critical Path Dominance</h4><h4 data-lang-es>Dominancia de Ruta Crítica</h4><p data-lang-en>Activity B (Bidding) dominates with 0.76 correlation. Targeted mitigation on this phase yields highest return on effort.</p><p data-lang-es>La actividad B (Licitación) domina con correlación 0.76. La mitigación enfocada en esta fase genera el mayor retorno.</p></div>
+    <div class="conclusion-card coral"><h4 data-lang-en>Low Dual Compliance</h4><h4 data-lang-es>Bajo Cumplimiento Dual</h4><p data-lang-en>Only 4.9% of E2 simulations achieve both ≤100 days and ≤$20,000. A 15% budget reserve over P50 is recommended.</p><p data-lang-es>Solo el 4.9% del E2 logra ≤100 días y ≤$20,000 simultáneamente. Se recomienda reserva del 15% sobre P50.</p></div>
+    <div class="conclusion-card teal"><h4 data-lang-en>Decision Framework</h4><h4 data-lang-es>Marco de Decisión</h4><p data-lang-en>If deadline-driven with funding, E2 viable with P90 budgeting (~$27K). If cost-focused, E1 preferred despite later delivery.</p><p data-lang-es>Si hay presión de plazo y fondos, E2 viable con presupuesto P90 (~$27K). Si la prioridad es costo, se prefiere E1.</p></div>
+    <div class="conclusion-card amber"><h4 data-lang-en>High-Risk Quadrant</h4><h4 data-lang-es>Cuadrante de Alto Riesgo</h4><p data-lang-en>31% of E2 simulations fall into high-cost, high-duration quadrant — one-in-three chance of dual failure.</p><p data-lang-es>El 31% del E2 cae en el cuadrante de alto costo y alta duración — una probabilidad de uno en tres de falla dual.</p></div>
+    <div class="conclusion-card coral"><h4 data-lang-en>Budget Reserve</h4><h4 data-lang-es>Reserva Presupuestal</h4><p data-lang-en>Minimum 15% contingency above P50 in all scenarios. For E2 at P90: plan at least $27,036.</p><p data-lang-es>Contingencia mínima del 15% sobre P50 en todos los escenarios. Para E2 en P90: planificar al menos $27,036.</p></div>
+  </div>
+  <div class="btn-group">
+    <a href="#source-code" class="btn btn-secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span data-lang-en>View Source Code</span><span data-lang-es>Ver Código Fuente</span></a>
+    <a href="#" class="btn btn-ghost"><span data-lang-en>Back to Top →</span><span data-lang-es>Volver al Inicio →</span></a>
+  </div>
+</div></section>
+
+<hr class="divider"/>
+
+<!-- SOURCE CODE -->
+<section id="source-code"><div class="section-inner reveal">
+  <div class="section-label"><span data-lang-en>Implementation</span><span data-lang-es>Implementación</span></div>
+  <h2 class="section-title" data-lang-en>Python Source Code</h2><h2 class="section-title" data-lang-es>Código Fuente en Python</h2>
+  <p class="section-desc" data-lang-en>Simulation analysis implemented in Python with NumPy, Pandas, and Matplotlib.</p>
+  <p class="section-desc" data-lang-es>Análisis de simulación implementado en Python con NumPy, Pandas y Matplotlib.</p>
+  <div class="code-preview">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">Simulacion_Duracion_Costo.ipynb</span></div>
+    <pre class="code-body"><span class="cm"># Monte Carlo Simulation — Duration &amp; Cost Analysis</span>
+<span class="cm"># Pharmaceutical Procurement Risk Assessment</span>
+
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="cm"># Load simulation data (6,000 iterations from IziRisk®)</span>
+df <span class="op">=</span> pd.<span class="fn">read_excel</span>(ruta_archivo, sheet_name<span class="op">=</span><span class="str">'Datos_Simulados'</span>)
+
+<span class="cm"># Extract cost columns for both scenarios</span>
+columna_costos_e1 <span class="op">=</span> <span class="str">'Modelo_Costo!$B$20'</span>
+columna_costos_e2 <span class="op">=</span> <span class="str">'Modelo_Costo!$C$20'</span>
+
+<span class="cm"># Calculate key percentiles</span>
+p10, p50, p90 <span class="op">=</span> np.<span class="fn">percentile</span>(data, [<span class="num">10</span>, <span class="num">50</span>, <span class="num">90</span>])
+
+<span class="cm"># Generate histogram with cumulative probability curve</span>
+fig, ax1 <span class="op">=</span> plt.<span class="fn">subplots</span>(figsize<span class="op">=</span>(<span class="num">14</span>, <span class="num">6</span>))
+counts, bins, _ <span class="op">=</span> ax1.<span class="fn">hist</span>(data, bins<span class="op">=</span><span class="num">30</span>, density<span class="op">=</span><span class="kw">True</span>,
+                          alpha<span class="op">=</span><span class="num">0.7</span>, color<span class="op">=</span><span class="str">'lightcoral'</span>)
+
+<span class="cm"># Quadrant analysis for Scenario 2</span>
+umbral_duracion <span class="op">=</span> <span class="num">100</span>
+umbral_costo <span class="op">=</span> <span class="num">20000</span></pre>
+  </div>
+  <div class="btn-group">
+    <a class="btn btn-primary" href="https://github.com/myriskexp/Risk_quantification_duartion_cost_procurement_of_medicines" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg><span data-lang-en>View Full Repository</span><span data-lang-es>Ver Repositorio Completo</span></a>
+    <a href="#" class="btn btn-secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span data-lang-en>Back to Top</span><span data-lang-es>Volver al Inicio</span></a>
+  </div>
+</div></section>
+
+<!-- FOOTER -->
+<footer><div class="footer-inner">
+  <div class="footer-top">
+    <div class="footer-logo"><img src="Logo/myriskexp-logo.png" alt="MyRiskExp" onerror="this.style.display='none'" /></div>
+    <div class="footer-social"><a href="https://github.com/myriskexp" target="_blank" rel="noreferrer" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg></a></div>
+  </div>
+  <div class="footer-text">
+    <div>Developed by MyRiskExp — Risk Analysis &amp; Strategic Intelligence</div>
+    <div>GitHub: <a href="https://github.com/myriskexp" target="_blank" rel="noreferrer">https://github.com/myriskexp</a></div>
+    <div>© 2026 MyRiskExp. All rights reserved.</div>
+  </div>
+</div></footer>
+
+<!-- SCRIPTS -->
+<script>
+function setLang(l){document.documentElement.lang=l;document.getElementById('btnEN').classList.toggle('active',l==='en');document.getElementById('btnES').classList.toggle('active',l==='es');try{localStorage.setItem('lang',l)}catch(e){}}
+try{const s=localStorage.getItem('lang');if(s)setLang(s)}catch(e){}
+
+const observer=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+Chart.defaults.color='#8c99b0';Chart.defaults.borderColor='rgba(255,255,255,.04)';Chart.defaults.font.family="'IBM Plex Sans',sans-serif";Chart.defaults.font.size=11;
+
+function genPert(m,s,mn,mx,n=3000){const d=[];for(let i=0;i<n;i++){let u,v,t;do{u=Math.random()*2-1;v=Math.random()*2-1;t=u*u+v*v}while(t>=1||t===0);d.push(Math.max(mn,Math.min(mx,m+u*Math.sqrt(-2*Math.log(t)/t)*s)))}return d}
+
+function histData(raw,bins=28){const mn=Math.min(...raw),mx=Math.max(...raw),st=(mx-mn)/bins,lb=[],ct=[];for(let i=0;i<bins;i++){const lo=mn+i*st;lb.push(((lo+lo+st)/2).toFixed(1));ct.push(raw.filter(v=>v>=lo&&v<lo+st).length)}const t=raw.length,fr=ct.map(c=>c/t),cm=[];let a=0;fr.forEach(f=>{a+=f;cm.push(a)});return{labels:lb,freq:fr,cum:cm}}
+
+function findIdx(lb,v){let c=0,m=Infinity;lb.forEach((l,i)=>{const d=Math.abs(parseFloat(l)-v);if(d<m){m=d;c=i}});return c}
+
+function makeHist(id,raw,col,lcol,p10,p50,p90){const{labels:lb,freq:fr,cum}=histData(raw);new Chart(document.getElementById(id),{data:{labels:lb,datasets:[{type:'bar',data:fr,backgroundColor:lcol,borderColor:col,borderWidth:1,borderRadius:2,yAxisID:'y',order:2},{type:'line',data:cum,borderColor:'#3b82f6',borderWidth:2,pointRadius:0,tension:.4,yAxisID:'y1',order:1}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,23,41,.95)',borderColor:'rgba(255,255,255,.1)',borderWidth:1,callbacks:{label:c=>c.datasetIndex===0?'Freq: '+(c.raw*100).toFixed(1)+'%':'Cum: '+(c.raw*100).toFixed(1)+'%'}},annotation:{annotations:{p10:{type:'line',xMin:findIdx(lb,p10),xMax:findIdx(lb,p10),borderColor:'rgba(255,255,255,.3)',borderWidth:1,borderDash:[4,4],label:{display:true,content:'P10: '+p10.toFixed(0),position:'start',backgroundColor:'transparent',color:'#a8b3c7',font:{size:10}}},p50:{type:'line',xMin:findIdx(lb,p50),xMax:findIdx(lb,p50),borderColor:'rgba(255,255,255,.4)',borderWidth:1.5,borderDash:[4,4],label:{display:true,content:'P50: '+p50.toFixed(0),position:'start',backgroundColor:'transparent',color:'#e2e7ef',font:{size:10,weight:'600'}}},p90:{type:'line',xMin:findIdx(lb,p90),xMax:findIdx(lb,p90),borderColor:'rgba(255,255,255,.3)',borderWidth:1,borderDash:[4,4],label:{display:true,content:'P90: '+p90.toFixed(0),position:'start',backgroundColor:'transparent',color:'#a8b3c7',font:{size:10}}}}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8,callback:function(v,i){return i%4===0?lb[i]:''}}},y:{position:'left',grid:{color:'rgba(255,255,255,.03)'},ticks:{callback:v=>(v*100).toFixed(0)+'%'}},y1:{position:'right',grid:{display:false},min:0,max:1,ticks:{callback:v=>(v*100).toFixed(0)+'%'}}}}});}
+
+makeHist('chartDurE1',genPert(106.4,9.6,80.3,141.3),'rgba(96,165,250,.8)','rgba(96,165,250,.35)',94,105.9,119);
+makeHist('chartDurE2',genPert(95.5,9.3,70,134.4),'rgba(96,165,250,.8)','rgba(96,165,250,.35)',83.8,95.2,107.9);
+makeHist('chartCostE1',genPert(20710,1966,15200,28838),'rgba(248,113,113,.8)','rgba(248,113,113,.3)',18252,20574,23303);
+makeHist('chartCostE2',genPert(23741,2464,17137,33414),'rgba(248,113,113,.8)','rgba(248,113,113,.3)',20069,23497,27036);
+
+(function(){const pts=[];for(let i=0;i<2000;i++){let u1,v1,s1;do{u1=Math.random()*2-1;v1=Math.random()*2-1;s1=u1*u1+v1*v1}while(s1>=1||s1===0);const z1=u1*Math.sqrt(-2*Math.log(s1)/s1);let u2,v2,s2;do{u2=Math.random()*2-1;v2=Math.random()*2-1;s2=u2*u2+v2*v2}while(s2>=1||s2===0);const z2=u2*Math.sqrt(-2*Math.log(s2)/s2);const r=.85,z2c=r*z1+Math.sqrt(1-r*r)*z2;const d=Math.max(68,Math.min(136,95.5+z1*9.3)),c=Math.max(16e3,Math.min(35e3,23741+z2c*2464));let cl;if(d<100&&c<2e4)cl='#22c55e';else if(d<100)cl='#94a3b8';else if(c>=2e4)cl='#ef4444';else cl='#f59e0b';pts.push({x:d,y:c,color:cl})}
+new Chart(document.getElementById('chartScatter'),{type:'scatter',data:{datasets:[{data:pts.filter(p=>p.color==='#22c55e').map(p=>({x:p.x,y:p.y})),backgroundColor:'rgba(34,197,94,.5)',borderColor:'rgba(34,197,94,.7)',pointRadius:2.5},{data:pts.filter(p=>p.color==='#94a3b8').map(p=>({x:p.x,y:p.y})),backgroundColor:'rgba(148,163,184,.35)',borderColor:'rgba(148,163,184,.5)',pointRadius:2.5},{data:pts.filter(p=>p.color==='#ef4444').map(p=>({x:p.x,y:p.y})),backgroundColor:'rgba(239,68,68,.45)',borderColor:'rgba(239,68,68,.6)',pointRadius:2.5},{data:pts.filter(p=>p.color==='#f59e0b').map(p=>({x:p.x,y:p.y})),backgroundColor:'rgba(245,158,11,.5)',borderColor:'rgba(245,158,11,.7)',pointRadius:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,23,41,.95)',callbacks:{label:c=>'Dur: '+c.raw.x.toFixed(1)+'d | $'+c.raw.y.toFixed(0)}},annotation:{annotations:{dl:{type:'line',xMin:100,xMax:100,borderColor:'rgba(255,255,255,.25)',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:'100 days',position:'start',color:'#a8b3c7',backgroundColor:'transparent',font:{size:10}}},cl:{type:'line',yMin:2e4,yMax:2e4,borderColor:'rgba(255,255,255,.25)',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:'$20,000',position:'start',color:'#a8b3c7',backgroundColor:'transparent',font:{size:10}}}}}},scales:{x:{title:{display:true,text:'Total Duration (days)',color:'#8c99b0'},grid:{color:'rgba(255,255,255,.03)'},min:65,max:140},y:{title:{display:true,text:'Total Cost ($)',color:'#8c99b0'},grid:{color:'rgba(255,255,255,.03)'},min:15e3,max:35e3,ticks:{callback:v=>'$'+v.toLocaleString()}}}}})})();
+</script>
+</body>
+</html>
